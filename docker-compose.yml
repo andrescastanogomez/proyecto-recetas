@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: recetas_mysql_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: recetas_db
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: db_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  web:
+    build: .
+    container_name: fastapi_app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://db_user:db_password@db:3306/recetas_db
+      - SECRET_KEY=clave_secreta_para_produccion_12345
+      - LLM_API_KEY=tu_token_real_de_openrouter_va_aqui
+      - LLM_MODEL=meta-llama/llama-3-8b-instruct:free
+    depends_on:
+      - db
+
+volumes:
+  db_data:
