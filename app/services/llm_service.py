@@ -1,73 +1,105 @@
-# app/services/llm_service.py
 import os
 import json
-import requests
 from typing import List
 
+from google import genai
+
+
 def generar_receta_llm(ingredientes: List[str]) -> dict:
-    api_key = os.getenv("LLM_API_KEY")
-    model = os.getenv("LLM_MODEL", "meta-llama/llama-3-8b-instruct:free")
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    
-    # Si no tienes API Key configurada localmente aún, te dará esta receta segura
+
+    api_key = os.getenv("GEMINI_API_KEY")
+
     if not api_key:
         return {
-            "nombre": "Receta de Prueba (Falta LLM_API_KEY)",
-            "ingredientes": ["Ingredientes provistos: " + ", ".join(ingredientes)],
-            "pasos": "1. Configura tu API key de OpenRouter en las variables de entorno.\n2. Reinicia el contenedor.",
-            "tiempo_estimado": "5 min",
+            "nombre": "Receta sugerida",
+            "ingredientes": ingredientes,
+            "pasos": (
+                "1. Lava y prepara los ingredientes.\n"
+                "2. Combínalos adecuadamente.\n"
+                "3. Cocina durante 15 minutos.\n"
+                "4. Sirve y disfruta."
+            ),
+            "tiempo_estimado": "15 min",
             "dificultad": "Fácil"
         }
 
-    ingredientes_str = ", ".join(ingredientes)
-    
-    # Diseñamos un prompt estricto para forzar al modelo a retornar solo JSON estructurado
     prompt = f"""
-    Eres un chef profesional de alta cocina. Crea una receta única y coherente utilizando principalmente algunos o todos los siguientes ingredientes disponibles: {ingredientes_str}.
-    Debes responder EXCLUSIVAMENTE con un objeto JSON válido, sin textos introductorios, sin saludos y sin bloques de código de markdown (no encierres la respuesta en ```json).
-    La estructura interna del JSON debe ser exactamente esta:
-    {{
-        "nombre": "Nombre creativo del plato",
-        "ingredientes": ["lista de ingredientes necesarios detallados con cantidades lógicas"],
-        "pasos": "Pasos detallados de la preparación enumerados paso a paso de manera clara",
-        "tiempo_estimado": "Tiempo total aproximado en minutos (ej: 25 min)",
-        "dificultad": "Fácil, Media o Difícil"
-    }}
-    """
+Usa únicamente estos ingredientes:
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "user", "content": prompt}
-        ]
-    }
+{", ".join(ingredientes)}
+
+Genera una receta REAL, detallada y útil.
+
+Devuelve EXCLUSIVAMENTE JSON válido con este formato:
+
+{{
+    "nombre": "Nombre de la receta",
+    "ingredientes": [
+        "ingrediente 1",
+        "ingrediente 2"
+    ],
+    "pasos": "1. Paso uno\\n2. Paso dos\\n3. Paso tres\\n4. Paso cuatro",
+    "tiempo_estimado": "20 min",
+    "dificultad": "Fácil"
+}}
+
+No agregues markdown.
+No agregues comentarios.
+No agregues texto adicional.
+"""
 
     try:
-        response = requests.post(url, headers=headers, json=payload, timeout=20)
-        response.raise_for_status()
-        resultado = response.json()
-        
-        texto_respuesta = resultado['choices'][0]['message']['content'].strip()
-        
-        # Limpieza por si el modelo ignora la instrucción y pone etiquetas markdown ```json
-        if texto_respuesta.startswith("```"):
-            texto_respuesta = texto_respuesta.replace("```json", "").replace("```", "").strip()
-            
-        # Parseamos el texto a un diccionario nativo de Python para validar el JSON
-        receta_json = json.loads(texto_respuesta)
-        return receta_json
-        
-    except Exception as e:
-        # Mecanismo de contingencia elegante en caso de fallos de red o de formateo del modelo
+
+        client = genai.Client(api_key=api_key)
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+
+        contenido = (
+            response.text
+            .replace("```json", "")
+            .replace("```", "")
+            .strip()
+        )
+
+        print("RESPUESTA GEMINI:")
+        print(contenido)
+
+        receta = json.loads(contenido)
+
         return {
-            "nombre": "Combinado rápido del chef (Modo de Fallo)",
+            "nombre": receta.get(
+                "nombre",
+                "Receta generada"
+            ),
+            "ingredientes": receta.get(
+                "ingredientes",
+                ingredientes
+            ),
+            "pasos": receta.get(
+                "pasos",
+                "No se generaron pasos."
+            ),
+            "tiempo_estimado": receta.get(
+                "tiempo_estimado",
+                "20 min"
+            ),
+            "dificultad": receta.get(
+                "dificultad",
+                "Media"
+            )
+        }
+
+    except Exception as e:
+
+        print("ERROR GEMINI:", str(e))
+
+        return {
+            "nombre": "Error IA",
             "ingredientes": ingredientes,
-            "pasos": f"Saltear los ingredientes disponibles en una sartén con un poco de aceite hasta que estén listos. Nota de error: {str(e)}",
-            "tiempo_estimado": "15 min",
-            "dificultad": "Fácil"
+            "pasos": f"Error generando receta: {str(e)}",
+            "tiempo_estimado": "-",
+            "dificultad": "-"
         }

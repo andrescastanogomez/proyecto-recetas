@@ -1,36 +1,99 @@
-# app/routers/ingredientes.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from app.models.base import get_db
-from app.models.modelos import Ingrediente, Usuario
+
+from app.models.base import get_db, IngredientModel, UsuarioModel
 from app.schemas.esquemas import IngredienteCreate, IngredienteResponse
 from app.services.auth_service import obtener_usuario_actual
 
-router = APIRouter(prefix="/api/ingredientes", tags=["Inventario de Ingredientes"])
+router = APIRouter(
+    prefix="/api/ingredientes",
+    tags=["Inventario de Ingredientes"]
+)
 
-@router.post("/", response_model=IngredienteResponse)
-def crear_ingrediente(ingrediente: IngredienteCreate, db: Session = Depends(get_db), usuario: Usuario = Depends(obtener_usuario_actual)):
-    nuevo_ingrediente = Ingrediente(
+
+# ==========================================
+# ENDPOINT: OBTENER INGREDIENTES (GET)
+# ==========================================
+@router.get("/", response_model=List[IngredienteResponse])
+def obtener_ingredientes(
+    db: Session = Depends(get_db),
+    current_user: UsuarioModel = Depends(obtener_usuario_actual)
+):
+    ingredientes = db.query(IngredientModel).filter(
+        IngredientModel.usuario_id == current_user.id
+    ).all()
+
+    return ingredientes
+
+
+# ==========================================
+# ENDPOINT: AGREGAR INGREDIENTE (POST)
+# ==========================================
+@router.post("/", response_model=IngredienteResponse, status_code=status.HTTP_201_CREATED)
+def agregar_ingrediente(
+    ingrediente: IngredienteCreate,
+    db: Session = Depends(get_db),
+    current_user: UsuarioModel = Depends(obtener_usuario_actual)
+):
+    nuevo_ingrediente = IngredientModel(
         nombre=ingrediente.nombre,
         cantidad=ingrediente.cantidad,
-        usuario_id=usuario.id
+        usuario_id=current_user.id
     )
+
     db.add(nuevo_ingrediente)
     db.commit()
     db.refresh(nuevo_ingrediente)
+
     return nuevo_ingrediente
 
-@router.get("/", response_model=List[IngredienteResponse])
-def listar_ingredientes(db: Session = Depends(get_db), usuario: Usuario = Depends(obtener_usuario_actual)):
-    # Retorna únicamente los ingredientes asociados al usuario autenticado
-    return db.query(Ingrediente).filter(Ingrediente.usuario_id == usuario.id).all()
 
-@router.delete("/{ingrediente_id}", status_code=status.HTTP_200_OK)
-def eliminar_ingrediente(ingrediente_id: int, db: Session = Depends(get_db), usuario: Usuario = Depends(obtener_usuario_actual)):
-    item = db.query(Ingrediente).filter(Ingrediente.id == ingrediente_id, Ingrediente.usuario_id == usuario.id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Ingrediente no encontrado en tu inventario")
-    db.delete(item)
+# ==========================================
+# ENDPOINT: ACTUALIZAR INGREDIENTE (PUT)
+# ==========================================
+@router.put("/{ingrediente_id}", response_model=IngredienteResponse)
+def actualizar_ingrediente(
+    ingrediente_id: int,
+    ingrediente_actualizado: IngredienteCreate,
+    db: Session = Depends(get_db),
+    current_user: UsuarioModel = Depends(obtener_usuario_actual)
+):
+    db_ing = db.query(IngredientModel).filter(
+        IngredientModel.id == ingrediente_id,
+        IngredientModel.usuario_id == current_user.id
+    ).first()
+
+    if not db_ing:
+        raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
+
+    db_ing.nombre = ingrediente_actualizado.nombre
+    db_ing.cantidad = ingrediente_actualizado.cantidad
+
     db.commit()
-    return {"message": "Ingrediente eliminado correctamente"}
+    db.refresh(db_ing)
+
+    return db_ing
+
+
+# ==========================================
+# ENDPOINT: ELIMINAR INGREDIENTE (DELETE)
+# ==========================================
+@router.delete("/{ingrediente_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_ingrediente(
+    ingrediente_id: int,
+    db: Session = Depends(get_db),
+    current_user: UsuarioModel = Depends(obtener_usuario_actual)
+):
+    db_ing = db.query(IngredientModel).filter(
+        IngredientModel.id == ingrediente_id,
+        IngredientModel.usuario_id == current_user.id
+    ).first()
+
+    if not db_ing:
+        raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
+
+    db.delete(db_ing)
+    db.commit()
+
+    return

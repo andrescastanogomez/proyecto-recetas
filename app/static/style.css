@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --panel-bg: rgba(255, 255, 255, 0.9);
+    --primary: #ff6b6b;
+    --primary-hover: #fa5252;
+    --success: #10b981;
+    --success-hover: #059669;
+    --danger: #ef4444;
+    --danger-hover: #dc2626;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --radius: 16px;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-main);
+    margin: 0;
+    min-height: 100vh;
+    padding-bottom: 3rem;
+}
+
+header {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 1.2rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+header h1 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(to right, #ff6b6b, #ff8e53);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.container {
+    max-width: 850px;
+    margin: 2.5rem auto;
+    padding: 0 1rem;
+}
+
+.card {
+    background: var(--panel-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.08);
+}
+
+h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-inline {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+input[type="text"], input[type="number"], input[type="password"], input[type="email"] {
+    font-family: inherit;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background-color: white;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.15);
+}
+
+.form-inline input[type="text"] { flex: 3; }
+.form-inline input[type="number"] { flex: 1; }
+
+button {
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button:active { transform: scale(0.98); }
+button:not([class]) { background: var(--primary); color: white; }
+button:not([class]):hover { background: var(--primary-hover); }
+
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: var(--success-hover); }
+.btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+.btn-danger:hover { background: var(--danger); color: white; }
+.btn-edit { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+.btn-edit:hover { background: #2563eb; color: white; }
+
+ul { list-style: none; padding: 0; margin: 0; }
+li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+}
+
+.qty-badge {
+    background: #f1f5f9;
+    color: var(--primary);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.grid-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.checkbox-card {
+    background: white;
+    border: 1.5px solid #e2e8f0;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.checkbox-card input {
+    accent-color: var(--primary);
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.checkbox-card:hover {
+    border-color: var(--primary);
+    background: rgba(255, 107, 107, 0.02);
+}
+
+.recipe-box {
+    background: linear-gradient(to bottom right, #ffffff, #fffaf7);
+    border: 1px solid #ffe8cc;
+    border-left: 5px solid #ff922b;
+    padding: 1.75rem;
+    margin-top: 1.5rem;
+    border-radius: 12px;
+}
+
+.history-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}

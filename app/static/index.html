@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Recetas Inteligente</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="/static/favicon.ico">
+</head>
+<body>
+
+    <header>
+        <h1>🍳 Asistente de Cocina Inteligente</h1>
+
+        <div id="auth-status">
+            <span
+                id="user-display"
+                style="margin-right:15px;font-weight:600;color:#475569;">
+            </span>
+
+            <button
+                id="logout-btn"
+                class="btn-danger"
+                onclick="logout()"
+                style="display:none;padding:0.5rem 1rem;font-size:0.85rem;">
+                Cerrar Sesión
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <section id="auth-section" class="card">
+            <h2>🔐 Ingreso / Registro</h2>
+
+            <div
+                class="form-group"
+                style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.25rem;">
+
+                <input
+                    type="email"
+                    id="auth-email"
+                    placeholder="Usuario o Correo electrónico">
+
+                <input
+                    type="password"
+                    id="auth-password"
+                    placeholder="Contraseña">
+            </div>
+
+            <div style="display:flex;gap:1rem;">
+                <button
+                    onclick="login()"
+                    style="flex:1;">
+                    Iniciar Sesión
+                </button>
+
+                <button
+                    onclick="register()"
+                    class="btn-edit"
+                    style="flex:1;">
+                    Registrarse
+                </button>
+            </div>
+        </section>
+
+        <div id="app-content" style="display:none;">
+
+            <section class="card">
+                <h2>🥦 Mi Inventario de Ingredientes</h2>
+
+                <div class="form-inline">
+                    <input
+                        type="text"
+                        id="ing-name"
+                        placeholder="Ej. Carne molida, Tomate, Pollo...">
+
+                    <input
+                        type="number"
+                        id="ing-qty"
+                        placeholder="Cantidad"
+                        min="1"
+                        step="1">
+
+                    <button onclick="addIngredient()">
+                        Agregar
+                    </button>
+                </div>
+
+                <ul id="ingredients-list"></ul>
+            </section>
+
+            <section class="card">
+                <h2>🤖 Generador de Recetas con IA</h2>
+
+                <p style="color:#64748b;margin-bottom:1rem;">
+                    Selecciona los ingredientes que quieres usar:
+                </p>
+
+                <div
+                    id="ingredients-selection"
+                    class="grid-selection">
+                </div>
+
+                <button
+                    onclick="generateRecipe()"
+                    class="btn-success"
+                    style="margin-top:1.5rem;width:100%;font-size:1.1rem;padding:1rem;">
+                    🚀 ¡Generar Receta con IA!
+                </button>
+
+                <div
+                    id="recipe-result"
+                    class="recipe-box"
+                    style="display:none;">
+
+                    <h3
+                        id="recipe-title"
+                        style="margin-top:0;color:#ff6b6b;">
+                    </h3>
+
+                    <div
+                        style="display:flex;gap:1.5rem;margin-bottom:1rem;font-size:0.9rem;color:#64748b;">
+
+                        <span>
+                            <strong>⚡ Dificultad:</strong>
+                            <span id="recipe-diff"></span>
+                        </span>
+
+                        <span>
+                            <strong>⏱️ Tiempo:</strong>
+                            <span id="recipe-time"></span>
+                        </span>
+                    </div>
+
+                    <h4>📋 Ingredientes utilizados</h4>
+
+                    <p
+                        id="recipe-ingredients"
+                        style="
+                            background:#fff;
+                            padding:1rem;
+                            border-radius:8px;
+                            border:1px solid #e2e8f0;">
+                    </p>
+
+                    <h4>👨‍🍳 Pasos de Preparación</h4>
+
+                    <p
+                        id="recipe-steps"
+                        style="
+                            white-space:pre-line;
+                            background:#fff;
+                            padding:1rem;
+                            border-radius:8px;
+                            border:1px solid #e2e8f0;
+                            line-height:1.6;">
+                    </p>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>📜 Historial de Recetas Guardadas</h2>
+                <div id="recipes-history"></div>
+            </section>
+
+        </div>
+    </main>
+
+    <script src="/static/app.js?v=4"></script>
+</body>
+</html>
