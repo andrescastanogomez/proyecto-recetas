@@ -12,10 +12,11 @@ client = TestClient(app)
 # TEST 1: Validación Pydantic correcta
 # ==========================================
 def test_validacion_ingrediente_correcto():
-    data = {"nombre": "Papa", "cantidad": "4 unidades"}
+    data = {"nombre": "Papa", "cantidad": 4}
     ingrediente = IngredienteCreate(**data)
+
     assert ingrediente.nombre == "Papa"
-    assert ingrediente.cantidad == "4 unidades"
+    assert ingrediente.cantidad == 4
 
 
 # ==========================================
@@ -55,8 +56,9 @@ def test_parseo_llm_estructura_segura():
 # ==========================================
 def test_endpoint_root():
     response = client.get("/")
+
     assert response.status_code == 200
-    assert response.json()["status"] == "Online"
+    assert "<!DOCTYPE html>" in response.text
 
 
 # ==========================================
