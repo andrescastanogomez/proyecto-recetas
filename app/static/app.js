@@ -145,7 +145,6 @@ async function addIngredient() {
         return;
     }
 
-    // 🔥 FIX IMPORTANTE: cantidad ahora es número
     const payload = {
         nombre: nombre,
         cantidad: Number(cantidad)
@@ -186,7 +185,6 @@ async function updateIngredientPrompt(id, nombre, cantidadActual) {
         return;
     }
 
-    // 🔥 FIX IMPORTANTE
     const payload = {
         nombre: String(nombre),
         cantidad: Number(cantidadLimpia)
@@ -232,8 +230,6 @@ async function deleteIngredient(id) {
     }
 }
 
-/* 🔻 resto del código SIN cambios (recetas, historial, etc.) */
-
 async function generateRecipe() {
     const res = await fetch(`${API_URL}/api/recetas/generar`, {
         method: "POST",
@@ -273,6 +269,7 @@ async function generateRecipe() {
     loadHistory();
 }
 
+/* 🔄 MODIFICACIÓN AQUÍ: Carga el historial renderizando 5 estrellas interactivas */
 async function loadHistory() {
     const res = await fetch(`${API_URL}/api/recetas/`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -287,32 +284,66 @@ async function loadHistory() {
 
     recetas.forEach(rec => {
         const div = document.createElement("div");
+        div.style.borderBottom = "1px solid #e2e8f0";
+        div.style.paddingBottom = "1rem";
+        div.style.marginBottom = "1rem";
 
         div.innerHTML = `
             <h4>${rec.nombre}</h4>
-            <p>${rec.dificultad || ""}</p>
-            <p>${rec.tiempo_estimado || ""}</p>
+            <p style="margin:4px 0; font-size:0.9rem; color:#64748b;">⚡ Dificultad: ${rec.dificultad || "N/A"}</p>
+            <p style="margin:4px 0; font-size:0.9rem; color:#64748b;">⏱️ Tiempo: ${rec.tiempo_estimado || "N/A"}</p>
 
-            <button onclick="calificarReceta(${rec.id}, 5)">⭐⭐⭐⭐⭐</button>
+            <div id="stars-container-${rec.id}" style="margin-top:8px;">
+                ${[1, 2, 3, 4, 5].map(estrella => `
+                    <span 
+                        class="star-btn" 
+                        onclick="calificarReceta(${rec.id}, ${estrella})"
+                        style="cursor:pointer; font-size:1.3rem; margin-right:4px;"
+                        title="Calificar con ${estrella} estrellas">⭐</span>
+                `).join("")}
+            </div>
         `;
 
         historyDiv.appendChild(div);
     });
 }
 
+/* 🔄 MODIFICACIÓN AQUÍ: Lógica dinámica de votación con bloqueo definitivo */
 async function calificarReceta(recetaId, puntos) {
+    const contenedor = document.getElementById(`stars-container-${recetaId}`);
+
+    // 🔒 Control de fraude: Detiene la ejecución si ya fue clickeado antes en esta carga
+    if (contenedor.getAttribute("data-calificada") === "true") {
+        alert("Ya has calificado esta receta. ¡No puedes cambiar tu opinión!");
+        return;
+    }
+
     const res = await fetch(`${API_URL}/api/recetas/${recetaId}/calificar`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
+            "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ puntos })
+        body: JSON.stringify({ puntos: puntos })
     });
 
     const data = await res.json().catch(() => ({}));
 
-    if (!res.ok) {
+    if (res.ok) {
+        // 🔒 Bloqueo lógico inmediato
+        contenedor.setAttribute("data-calificada", "true");
+
+        // Bloqueo visual: Apaga las estrellas no seleccionadas y quita el cursor pointer
+        const estrellas = contenedor.querySelectorAll(".star-btn");
+        estrellas.forEach((est, index) => {
+            if (index >= puntos) {
+                est.style.opacity = "0.3"; // Apaga las estrellas que quedaron por encima
+            }
+            est.style.cursor = "not-allowed"; // Indica visualmente que está congelado
+        });
+
+        alert(`¡Gracias! Calificaste esta receta con ${puntos} estrellas.`);
+    } else {
         alert(data.detail || "Error al calificar");
     }
 }
